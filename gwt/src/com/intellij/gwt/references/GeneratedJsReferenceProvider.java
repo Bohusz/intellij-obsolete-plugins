@@ -3,6 +3,7 @@ package com.intellij.gwt.references;
 import com.intellij.gwt.facet.GwtFacet;
 import com.intellij.gwt.module.GwtModulesManager;
 import com.intellij.gwt.module.model.GwtModule;
+import com.intellij.gwt.web.GwtWebUtil;
 import com.intellij.javaee.web.WebDirectoryElement;
 import com.intellij.javaee.web.WebUtil;
 import com.intellij.openapi.deployment.DeploymentUtil;
@@ -44,7 +45,7 @@ class GeneratedJsReferenceProvider extends PsiReferenceProvider {
             if (!gwtModulesByPublicFile.isEmpty()) {
               return new PsiReference[] {new GwtModuleInHtmlFileUnderPublicRootReference(file, attributeValue)};
             }
-            else if (gwtFacet.getSdkVersion().isHtmlFilesOutsideSourcesAreAllowed()) {
+            else if (gwtFacet.getSdkVersion().isHtmlFilesOutsideSourcesAreAllowed() && GwtWebUtil.isWebSupportAvailable()) {
               final WebDirectoryElement webDirectory = WebUtil.findWebDirectoryByFile(file, project);
               if (webDirectory != null) {
                 final WebDirectoryElement parent = webDirectory.getParent();

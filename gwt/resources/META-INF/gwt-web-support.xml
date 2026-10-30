@@ -1,0 +1,13 @@
+<idea-plugin>
+  <!-- Loaded only when the Web/Servlets plugin is enabled. Its implementation requires Ultimate. -->
+  <depends optional="true" config-file="gwt-run-support.xml">com.intellij.javaee.app.servers.integration</depends>
+  <depends optional="true" config-file="gwt-web-gradle-support.xml">org.jetbrains.plugins.gradle</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <junitPatcher implementation="com.intellij.gwt.junit.GwtJUnitPatcher"/>
+    <localInspection shortName="GwtServiceNotRegistered"
+                     key="inspection.name.gwt.remote.service.is.not.registered.in.web.xml" groupKey="group.gwt.inspections.name"
+                     enabledByDefault="true" level="ERROR"
+                     implementationClass="com.intellij.gwt.inspections.GwtServiceNotRegisteredInspection"/>
+  </extensions>
+</idea-plugin>

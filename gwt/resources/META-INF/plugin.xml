@@ -8,7 +8,7 @@
       <a href="https://www.gwtproject.org/overview.html">Google Web Toolkit</a>.
         <ul>
         <li>Coding assistance specific to GWT: code completion, syntax and error highlighting with quick fixes, refactorings, and much more</li>
-        <li>Dedicated run configurations</li>
+        <li>Dedicated run configurations when the optional Ultimate web and application-server plugins are enabled</li>
         <li>Integration with the GWT compiler</li>
         <li>Automatic creation of GWT components.</li>
         </ul>
@@ -17,14 +17,10 @@
   <resource-bundle>messages.GwtBundle</resource-bundle>
 
   <dependencies>
-    <plugin id="com.intellij.modules.ultimate"/>
-    <plugin id="com.intellij.modules.idea.ultimate"/>
     <plugin id="JavaScript"/>
     <!-- region Generated dependencies - run `Generate Product Layouts` to regenerate -->
     <plugin id="com.intellij.css"/>
     <plugin id="com.intellij.java-i18n"/>
-    <plugin id="com.intellij.javaee.app.servers.integration"/>
-    <plugin id="com.intellij.javaee.web"/>
     <module name="intellij.css.analysis"/>
     <module name="intellij.css.backend"/>
     <module name="intellij.css.common"/>
@@ -47,18 +43,14 @@
     <module name="intellij.javaee.app.servers"/>
     <module name="intellij.javaee.ejb"/>
     <module name="intellij.javaee.platform"/>
-    <module name="intellij.javaee.platform.impl"/>
     <module name="intellij.javaee.web"/>
     <module name="intellij.javascript.analysis.impl"/>
     <module name="intellij.javascript.backend"/>
     <module name="intellij.javascript.common"/>
-    <module name="intellij.javascript.debugger.ui"/>
     <module name="intellij.javascript.parser"/>
     <module name="intellij.javascript.psi.impl"/>
     <module name="intellij.maven"/>
     <module name="intellij.platform.jps.build"/>
-    <module name="intellij.platform.scriptDebugger.backend"/>
-    <module name="intellij.platform.webide"/>
     <module name="intellij.properties.backend.psi"/>
     <module name="intellij.properties.psi"/>
     <module name="intellij.xml.dom"/>
@@ -69,13 +61,13 @@
   </dependencies>
 
   <content namespace="intellij-gwt">
-    <module name="intellij.gwt.spring"/>
-    <module name="intellij.gwt.dev"/>
+    <module name="intellij.gwt.spring" loading="optional"/>
+    <module name="intellij.gwt.dev" loading="optional"/>
   </content>
 
   <depends optional="true" config-file="gwt-maven-support.xml">org.jetbrains.idea.maven</depends>
   <depends optional="true" config-file="gradle-support.xml">org.jetbrains.plugins.gradle</depends>
-  <depends optional="true" config-file="javascript-debugger.xml">JavaScriptDebugger</depends>
+  <depends optional="true" config-file="gwt-web-support.xml">com.intellij.javaee.web</depends>
   <vendor>JetBrains</vendor>
   <category>JVM Frameworks</category>
 
@@ -89,7 +81,6 @@
   <extensions defaultExtensionNs="com.intellij">
     <facetType implementation="com.intellij.gwt.facet.GwtFacetType"/>
     <framework.detector implementation="com.intellij.gwt.facet.GwtFacetType$GwtFrameworkDetector"/>
-    <junitPatcher implementation="com.intellij.gwt.junit.GwtJUnitPatcher"/>
     <packaging.elementType implementation="com.intellij.gwt.packaging.GwtCompilerOutputElementType"/>
     <packaging.elementType implementation="com.intellij.gwt.packaging.GwtCompilerDeployOutputElementType"/>
     <packaging.sourceItemProvider implementation="com.intellij.gwt.packaging.GwtCompilerOutputSourceItemProvider"/>
@@ -146,9 +137,6 @@
     <superMethodsSearch implementation="com.intellij.gwt.rpc.GwtAsyncMethodSearcher"/>
     <deepestSuperMethodsSearch implementation="com.intellij.gwt.rpc.GwtDeepestAsyncMethodSearcher"/>
 
-    <frameworkSupport implementation="com.intellij.gwt.facet.GwtFacetFrameworkSupportProvider" order="last"/>
-    <configurationType implementation="com.intellij.gwt.run.GwtRunConfigurationType"/>
-    <runConfigurationProducer implementation="com.intellij.gwt.run.GwtConfigurationProvider"/>
 
     <lang.parserDefinition language="GWT JavaScript" implementationClass="com.intellij.gwt.jsinject.parser.GwtParserDefinition"/>
     <stubElementRegistryExtension implementation="com.intellij.gwt.jsinject.parser.GwtStubRegistryExtension"/>
@@ -195,8 +183,6 @@
                             order="first, before xml"/>
     <semContributor implementation="com.intellij.gwt.uiBinder.mapping.UiBinderSemContributor"/>
 
-    <gwt.devModeServerProvider implementation="com.intellij.gwt.run.DefaultDevModeServerProvider"/>
-    <runningApplicationUpdaterProvider implementation="com.intellij.gwt.run.DevModeUpdaterProvider"/>
 
     <semContributor implementation="com.intellij.gwt.clientBundle.ClientBundleSemContributor"/>
     <codeInsight.lineMarkerProvider language="JAVA" implementationClass="com.intellij.gwt.clientBundle.ClientBundleLineMarkerProvider"/>
@@ -230,10 +216,6 @@
                      key="inspection.name.client.class.from.non.inherited.module.usage" groupKey="group.gwt.inspections.name"
                      enabledByDefault="true" level="ERROR"
                      implementationClass="com.intellij.gwt.inspections.ClientClassFromNonInheritedModuleUsageInspection"/>
-    <localInspection shortName="GwtServiceNotRegistered"
-                     key="inspection.name.gwt.remote.service.is.not.registered.in.web.xml" groupKey="group.gwt.inspections.name"
-                     enabledByDefault="true" level="ERROR"
-                     implementationClass="com.intellij.gwt.inspections.GwtServiceNotRegisteredInspection"/>
     <localInspection shortName="GwtInconsistentI18nInterface"
                      key="inspection.name.inconsistent.gwt.localizable.interface" groupKey="group.gwt.inspections.name"
                      enabledByDefault="true" level="ERROR"

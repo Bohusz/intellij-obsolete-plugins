@@ -24,6 +24,14 @@ public final class GwtWebUtil {
   private GwtWebUtil() {
   }
 
+  public static boolean isWebSupportAvailable() {
+    // The WebFacet API is free; its facet type and services are supplied by the optional Web/Servlets plugin.
+    for (FacetType<?, ?> type : FacetTypeRegistry.getInstance().getFacetTypes()) {
+      if (WebFacet.ID.equals(type.getId())) return true;
+    }
+    return false;
+  }
+
   public static WebFacet createWebFacet(@NotNull GwtFacet facet, @NotNull VirtualFile root) {
     Project project = facet.getModule().getProject();
     final ConfigFileMetaData webXml = DeploymentDescriptorsConstants.WEB_XML_META_DATA;
@@ -43,6 +51,7 @@ public final class GwtWebUtil {
   }
 
   public static @Nullable @NlsSafe String getRelativeToWebRootPath(@NotNull VirtualFile htmlFile, @NotNull Project project) {
+    if (!isWebSupportAvailable()) return null;
     final WebFacet webFacet = WebUtil.findFacetByFileUnderWebRoot(htmlFile, project);
     if (webFacet != null) {
       final WebRoot webRoot = WebUtil.findParentWebRoot(htmlFile, webFacet.getWebRoots());

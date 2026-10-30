@@ -23,6 +23,7 @@ import com.intellij.gwt.module.model.GwtServlet;
 import com.intellij.gwt.rpc.GwtServletUtil;
 import com.intellij.gwt.rpc.RemoteServiceUtil;
 import com.intellij.gwt.templates.GwtTemplates;
+import com.intellij.gwt.web.GwtWebUtil;
 import com.intellij.ide.highlighter.JavaFileType;
 import com.intellij.javaee.web.WebUtil;
 import com.intellij.javaee.web.facet.WebFacet;
@@ -72,7 +73,7 @@ public class CreateGwtRemoteServiceAction extends GwtCreateActionBase {
   @Override
   protected PsiFile[] getAffectedFiles(final GwtModule gwtModule) {
     final XmlFile xmlFile = gwtModule.getModuleXmlFile();
-    if (xmlFile != null) {
+    if (xmlFile != null && GwtWebUtil.isWebSupportAvailable()) {
       final WebFacet webFacet = WebUtil.getWebFacet(xmlFile);
       if (webFacet != null) {
         final WebApp webApp = webFacet.getRoot();
@@ -110,7 +111,7 @@ public class CreateGwtRemoteServiceAction extends GwtCreateActionBase {
     gwtServlet.getPath().setValue(servletPath);
     gwtServlet.getServletClass().setValue(servletImpl.getQualifiedName());
 
-    final WebFacet webFacet = WebUtil.getWebFacet(xml);
+    final WebFacet webFacet = GwtWebUtil.isWebSupportAvailable() ? WebUtil.getWebFacet(xml) : null;
     if (webFacet != null) {
       final WebApp webApp = webFacet.getRoot();
       if (webApp != null) {

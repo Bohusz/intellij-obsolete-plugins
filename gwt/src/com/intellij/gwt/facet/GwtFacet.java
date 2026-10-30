@@ -29,6 +29,7 @@ import com.intellij.gwt.sdk.GwtSdkManager;
 import com.intellij.gwt.sdk.GwtSdkUtil;
 import com.intellij.gwt.sdk.GwtVersion;
 import com.intellij.gwt.sdk.impl.GwtVersionImpl;
+import com.intellij.gwt.web.GwtWebUtil;
 import com.intellij.javaee.web.facet.WebFacet;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
@@ -81,6 +82,7 @@ public class GwtFacet extends Facet<GwtFacetConfiguration> {
   }
 
   public @Nullable WebFacet getWebFacet() {
+    if (!GwtWebUtil.isWebSupportAvailable()) return null;
     final String webFacetName = getConfiguration().getWebFacetName();
     return webFacetName != null ? FacetManager.getInstance(getModule()).findFacet(WebFacet.ID, webFacetName) : null;
   }

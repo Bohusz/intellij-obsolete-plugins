@@ -21,7 +21,10 @@ import com.intellij.openapi.application.PathManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.projectRoots.JavaSdk;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
+import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.JarFileSystem;
@@ -30,6 +33,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileFilter;
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -45,6 +49,22 @@ import java.io.IOException;
 
 public abstract class GwtTestCase extends JavaPsiTestCase {
   @NonNls private static final String MOCK_GWT_USER_JAR_NAME = "gwt-user.jar";
+
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    VfsRootAccess.allowRootAccess(getTestRootDisposable(), getGwtTestDataPath());
+  }
+
+  @Override
+  protected Sdk getTestProjectJdk() {
+    Sdk sdk = super.getTestProjectJdk();
+    // Released IDEs do not ship the intellij-community mock JDK used by these legacy tests.
+    if (sdk.getRootProvider().getFiles(OrderRootType.CLASSES).length == 0) {
+      return JavaSdk.getInstance().createJdk("GWT test JDK", System.getProperty("java.home"), false);
+    }
+    return sdk;
+  }
 
   @NotNull
   protected <T extends PsiElement> T findElementByString(final VirtualFile file, final String s, final Class<T> aClass) {

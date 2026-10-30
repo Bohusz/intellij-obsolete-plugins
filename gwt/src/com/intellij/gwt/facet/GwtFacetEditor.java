@@ -33,6 +33,7 @@ import com.intellij.gwt.sdk.GwtSdk;
 import com.intellij.gwt.sdk.GwtSdkManager;
 import com.intellij.gwt.sdk.GwtSdkType;
 import com.intellij.gwt.sdk.GwtSdkUtil;
+import com.intellij.gwt.web.GwtWebUtil;
 import com.intellij.javaee.web.facet.WebFacet;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbService;
@@ -294,7 +295,13 @@ public class GwtFacetEditor extends FacetEditorTab {
       }
     }, myGwtPathEditor.getComboBox());
 
-    validatorsManager.registerValidator(new GwtFacetArtifactValidator((GwtFacet)editorContext.getFacet(), myEditorContext, this));
+    if (GwtWebUtil.isWebSupportAvailable()) {
+      validatorsManager.registerValidator(new GwtFacetArtifactValidator((GwtFacet)editorContext.getFacet(), myEditorContext, this));
+    }
+    else {
+      myWebFacetBox.getParent().setVisible(false);
+      myPackagingPathsPanel.setVisible(false);
+    }
 
     final ColumnInfo[] columns = {ENABLED_COLUMN, MODULE_NAME_COLUMN, OUTPUT_PATH_COLUMN};
     myModulePackagingInfos = new ArrayList<>();

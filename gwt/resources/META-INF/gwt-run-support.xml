@@ -1,0 +1,12 @@
+<idea-plugin>
+  <depends optional="true" config-file="javascript-debugger.xml">JavaScriptDebugger</depends>
+  <depends optional="true" config-file="gwt-run-gradle-support.xml">org.jetbrains.plugins.gradle</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <frameworkSupport implementation="com.intellij.gwt.facet.GwtFacetFrameworkSupportProvider" order="last"/>
+    <configurationType implementation="com.intellij.gwt.run.GwtRunConfigurationType"/>
+    <runConfigurationProducer implementation="com.intellij.gwt.run.GwtConfigurationProvider"/>
+    <gwt.devModeServerProvider implementation="com.intellij.gwt.run.DefaultDevModeServerProvider"/>
+    <runningApplicationUpdaterProvider implementation="com.intellij.gwt.run.DevModeUpdaterProvider"/>
+  </extensions>
+</idea-plugin>

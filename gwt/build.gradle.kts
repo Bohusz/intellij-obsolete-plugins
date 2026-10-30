@@ -25,19 +25,20 @@ dependencies {
         intellijIdea(properties("platformVersion"))
 
         // hard dependencies (see resources/META-INF/plugin.xml <dependencies>)
-        bundledPlugin("com.intellij.modules.ultimate")
-        bundledPlugin("com.intellij.modules.idea.ultimate")
         bundledPlugin("JavaScript")
         bundledPlugin("com.intellij.css")
         bundledPlugin("com.intellij.java-i18n")
-        bundledPlugin("com.intellij.javaee.app.servers.integration")
-        bundledPlugin("com.intellij.javaee.web")
+        bundledPlugin("com.intellij.javaee")
 
         // optional dependencies
+        // Compile the optional Web/Servlets and run integration; these are not runtime requirements.
+        bundledPlugin("com.intellij.javaee.app.servers.integration")
+        bundledPlugin("com.intellij.javaee.web")
         bundledPlugin("org.jetbrains.idea.maven")
         bundledPlugin("com.intellij.gradle")
         bundledPlugin("org.jetbrains.plugins.gradle")
         bundledPlugin("JavaScriptDebugger")
+        bundledModule("intellij.platform.scriptDebugger.backend")
 
         // plugin content modules
         pluginModule(project(":spring"))
@@ -69,6 +70,7 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.13.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 }
 
 kotlin {
@@ -105,6 +107,33 @@ intellijPlatform {
     }
 }
 
+// Exercise the coding-assistance plugin with the subscription-only modules disabled.
+intellijPlatformTesting.testIde.register("testFreeEdition") {
+    plugins {
+        disablePlugins(listOf(
+            "com.intellij.modules.ultimate",
+            "com.intellij.modules.idea.ultimate",
+            "com.intellij.javaee.web",
+            "com.intellij.javaee.app.servers.integration",
+            "JavaScriptDebugger",
+        ))
+    }
+    task {
+        useJUnitPlatform()
+        testClassesDirs = sourceSets["test"].output.classesDirs
+        classpath = tasks.test.get().classpath
+        systemProperty("gwt.test.data.path", layout.projectDirectory.dir("testData").asFile.absolutePath)
+        filter {
+            includeTestsMatching("com.intellij.gwt.GwtFreeEditionTest")
+            includeTestsMatching("com.intellij.gwt.GwtAnnotationUtilTest")
+            includeTestsMatching("com.intellij.gwt.model.GwtModuleTest")
+            includeTestsMatching("com.intellij.gwt.model.GwtSourceTagTest")
+            includeTestsMatching("com.intellij.gwt.model.GwtSuperSourceElementFinderTest")
+            includeTestsMatching("com.intellij.gwt.inspections.GwtInspectionsTest")
+        }
+    }
+}
+
 tasks {
     withType<JavaCompile> {
         sourceCompatibility = properties("platformJavaVersion")
@@ -112,7 +141,12 @@ tasks {
     }
 
     test {
-        systemProperty("idea.home.path", properties("test.idea.home.path"))
+        useJUnitPlatform()
+        classpath += sourceSets["test"].runtimeClasspath
+        exclude("**/GwtFreeEditionTest.class")
+        providers.gradleProperty("test.idea.home.path").orNull?.takeIf { it.isNotBlank() }?.let {
+            systemProperty("idea.home.path", it)
+        }
         // GWT tests resolve fixtures relative to this directory (see GwtTestCase.getGwtTestDataPath)
         systemProperty("gwt.test.data.path", layout.projectDirectory.dir("testData").asFile.absolutePath)
     }

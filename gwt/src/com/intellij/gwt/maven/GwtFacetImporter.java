@@ -9,9 +9,9 @@ import com.intellij.gwt.module.model.GwtModule;
 import com.intellij.gwt.packaging.GwtCompileOutputRelativePathSuggester;
 import com.intellij.gwt.packaging.GwtCompilerOutputElement;
 import com.intellij.gwt.sdk.GwtDependenciesStorage;
+import com.intellij.gwt.web.GwtWebUtil;
 import com.intellij.javaee.web.WebRoot;
 import com.intellij.javaee.web.facet.WebFacet;
-import com.intellij.javaee.web.facet.WebFacetType;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.externalSystem.project.PackagingModifiableModel;
 import com.intellij.openapi.externalSystem.service.project.IdeModifiableModelsProvider;
@@ -154,12 +154,13 @@ public abstract class GwtFacetImporter extends FacetImporter<GwtFacet, GwtFacetC
         setupGwtSdk(facet, project);
         setupGwtCompilerOptions(facet.getConfiguration(), module, project);
 
-        WebFacet webFacet = findFacet(modelsProvider1.getModifiableFacetModel(module), WebFacetType.getInstance(), "Web");
-        if (webFacet != null) {
-          facet.getConfiguration().setWebFacetName(webFacet.getName());
+        if (GwtWebUtil.isWebSupportAvailable()) {
+          WebFacet webFacet = modelsProvider1.getModifiableFacetModel(module).getFacetByType(WebFacet.ID);
+          if (webFacet != null) {
+            facet.getConfiguration().setWebFacetName(webFacet.getName());
+          }
+          addGwtCompilerOutputToArtifact(modelsProvider1, module, facet, project, webFacet);
         }
-
-        addGwtCompilerOutputToArtifact(modelsProvider1, module, facet, project, webFacet);
         WriteAction.run(() -> {
           modelsProvider1.commit();
         });
@@ -245,6 +246,7 @@ public abstract class GwtFacetImporter extends FacetImporter<GwtFacet, GwtFacetC
     if (FileUtil.startsWith(gwtOutputPath, artifactOutput)) {
       return FileUtil.getRelativePath(artifactOutput, gwtOutputPath, '/');
     }
+    if (webFacet == null) return null;
     for (WebRoot root : webFacet.getWebRoots()) {
       String webRootPath = VfsUtilCore.urlToPath(root.getDirectoryUrl());
       if (FileUtil.startsWith(gwtOutputPath, webRootPath)) {

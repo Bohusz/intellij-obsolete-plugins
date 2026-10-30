@@ -143,6 +143,14 @@ Declared in `resources/META-INF/plugin.xml`, all `dynamic`:
 
 ## 11. Build & module layout
 
+- **Free mode (unified IDEA 2026.2)**: the main descriptor uses the free Java, JavaScript, CSS and
+  Jakarta EE API modules. Subscription-only implementation modules must not be required by the main
+  descriptor. `gwt-web-support.xml` and its nested descriptors register optional web, WAR and run
+  integrations only when their host plugins are enabled. Guard web-service calls with
+  `GwtWebUtil.isWebSupportAvailable()`. Use `GwtAnnotationUtil` for annotation constants instead of
+  `AnnotationModelUtil` from the Ultimate-only Java EE implementation. See `README.md` and the
+  `testFreeEdition` Gradle task.
+
 - **Gradle build** (IntelliJ Platform Gradle Plugin 2.x). The root `build.gradle.kts` builds the plugin;
   `settings.gradle.kts` adds subprojects `jps-plugin` (the external build process, packaged as
   `gwt-jps.jar`), `runtime` (small runtime jar), and the plugin **content modules** `spring` and `dev`.

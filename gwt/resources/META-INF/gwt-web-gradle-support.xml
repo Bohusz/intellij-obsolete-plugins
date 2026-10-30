@@ -1,0 +1,5 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="com.intellij">
+    <externalProjectDataService implementation="com.intellij.gwt.gradle.GwtArtifactsDataService"/>
+  </extensions>
+</idea-plugin>
