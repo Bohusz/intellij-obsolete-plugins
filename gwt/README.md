@@ -1,6 +1,6 @@
 # GWT plugin
 
-This fork supports the free mode of unified IntelliJ IDEA 2026.2 (including 2026.2.3).
+This fork targets the free mode of unified IntelliJ IDEA 2026.2.4.
 It requires Java, JavaScript, CSS, Java internationalization, and the bundled Jakarta EE API modules,
 which are available without an Ultimate subscription in this version.
 It does not target the older standalone Community Edition distributions.
@@ -22,7 +22,7 @@ Use JDK 25. From this directory, run:
 .\gradlew.bat buildPlugin
 ```
 
-Install `build\distributions\GWT-262.0.1.zip` with **Settings → Plugins → Install Plugin from Disk**.
+Install `build\distributions\GWT-262.0.2.zip` with **Settings → Plugins → Install Plugin from Disk**.
 Select the ZIP without extracting it, then restart IntelliJ if requested.
 
 ## Check free-mode compatibility
