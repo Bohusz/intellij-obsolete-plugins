@@ -40,15 +40,18 @@ public class GwtSuperSourceElementFinderTest extends GwtTestCase {
     final GwtModule gwtModule = assertOneElement(
       GwtModulesManager.getInstance(myProject).findGwtModulesByQualifiedName("ppp.MyModule", GlobalSearchScope.projectScope(myProject)));
     WriteCommandAction.runWriteCommandAction(myProject, () -> assertOneElement(gwtModule.getSuperSources()).undefine());
-    assertNull(findXxxPackage());
+    // Since 263 the platform's DeclaredPackageElementFinder reports package 'xxx' for any Java file declaring it, so the
+    // package itself may exist even without the super source; only the directories it maps to depend on the super source.
+    assertEmpty(findXxxDirectories());
 
     WriteCommandAction.runWriteCommandAction(myProject, () -> gwtModule.addSuperSource().getPath().setValue("sup"));
-    PsiDirectory directory = assertOneElement(findXxxPackage().getDirectories(GlobalSearchScope.projectScope(myProject)));
+    PsiDirectory directory = assertOneElement(findXxxDirectories());
     assertEquals("sup", directory.getParent().getName());
   }
 
-  private PsiPackage findXxxPackage() {
-    return JavaPsiFacade.getInstance(myProject).findPackage("xxx");
+  private PsiDirectory[] findXxxDirectories() {
+    PsiPackage psiPackage = JavaPsiFacade.getInstance(myProject).findPackage("xxx");
+    return psiPackage == null ? PsiDirectory.EMPTY_ARRAY : psiPackage.getDirectories(GlobalSearchScope.projectScope(myProject));
   }
 
   public void testFindSdkClass() {
