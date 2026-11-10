@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RemoteUiConnection {
   private final SocketConnection<RemoteUiRequest, RemoteUiResponse> myConnection;
@@ -30,6 +31,7 @@ public class RemoteUiConnection {
   private final boolean myOpenInBrowser;
   private final boolean myStartJavaScriptDebugger;
   private final WebBrowser myBrowser;
+  private final AtomicBoolean myBrowserOpened = new AtomicBoolean(false);
 
   public RemoteUiConnection(GwtRunConfiguration configuration, @NotNull GwtVersion sdkVersion, boolean openInBrowser,
                             boolean startJavaScriptDebugger, @Nullable WebBrowser browser) {
@@ -68,7 +70,15 @@ public class RemoteUiConnection {
   }
 
   private void onInitialized(String url) {
-    if (myOpenInBrowser) {
+    openBrowserOnce(url);
+  }
+
+  /**
+   * Opens the browser at most once per connection. Used both for the startup URL sent by GWT DevMode over the
+   * remote UI socket and as a fallback for SuperDevMode, where DevMode does not send any startup URL.
+   */
+  public void openBrowserOnce(@NotNull String url) {
+    if (myOpenInBrowser && myBrowser != null && myBrowserOpened.compareAndSet(false, true)) {
       JavaScriptDebuggerStarter.Util.startDebugOrLaunchBrowser(myConfiguration, url, myBrowser.getId().toString(),
                                                                myStartJavaScriptDebugger);
     }

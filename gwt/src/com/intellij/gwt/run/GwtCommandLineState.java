@@ -312,13 +312,15 @@ public final class GwtCommandLineState extends JavaCommandLineStateEx {
     }
     params.setMainClass(sdkVersion.getDevModeClass());
 
-    // Always shorten a potentially long classpath via a classpath file rather than passing it literally: otherwise a
-    // classpath exceeding the OS command-line limit (~33k chars) is silently truncated and tail dependencies such as
+    // Always shorten a potentially long classpath rather than passing it literally: otherwise a classpath exceeding
+    // the OS command-line limit (~33k chars) is silently truncated and tail dependencies such as
     // cern.colt.map.OpenIntObjectHashMap end up missing at runtime (IDEA-380767). Never use the 'manifest JAR' method:
     // the GWT dev/compiler manually searches for resources in URLs returned by URLClassLoader#getURLs, which does not
     // work with a manifest JAR. This mirrors the JPS compiler side (GwtBuilder#buildJavaCommandLine, useClasspathJar=false).
-    params.setClasspathFile(true);
+    // Use '@argfile' instead of the 'classpath file' (CommandLineWrapper), which is not supported on Java 9+.
     params.setUseDynamicClasspath(true);
+    params.setClasspathFile(false);
+    params.setArgFile(true);
 
     myServer.patchParameters(params, getOutputDir().getAbsolutePath(), myFacet);
     return params;
@@ -495,7 +497,40 @@ public final class GwtCommandLineState extends JavaCommandLineStateEx {
     processHandler.putUserData(GWT_CONFIGURATION_STATE_KEY, this);
     processHandler.addProcessListener(new GwtDevModeProcessListener());
     processHandler.addProcessListener(new GwtDevModeTerminationProcessListener());
+    addSuperDevModeBrowserLauncher(processHandler);
     return new DefaultExecutionResult(view, processHandler, createActions(mainConsole, processHandler, executor));
+  }
+
+  /**
+   * In SuperDevMode GWT DevMode only launches the CodeServer and does not send the startup URL over the remote UI
+   * socket, so the browser would never be opened. Open the configured run page once the code server is ready.
+   * If the remote UI has already opened the browser, nothing happens (see {@link RemoteUiConnection#openBrowserOnce}).
+   */
+  private void addSuperDevModeBrowserLauncher(@NotNull ProcessHandler processHandler) {
+    final String runPage = myRunConfigurationState.RUN_PAGE;
+    if (myUiConnection == null || !myRunConfigurationState.USE_SUPER_DEV_MODE || !myRunConfigurationState.OPEN_IN_BROWSER
+        || StringUtil.isEmptyOrSpaces(runPage)) {
+      return;
+    }
+
+    String port = "8888";
+    List<String> shellParameters = myPatchedShellParametersList.getParameters();
+    int portIndex = shellParameters.indexOf("-port");
+    if (portIndex >= 0 && portIndex + 1 < shellParameters.size()) {
+      port = shellParameters.get(portIndex + 1);
+    }
+    final String url = runPage.startsWith("http://") || runPage.startsWith("https://")
+                       ? runPage
+                       : "http://localhost:" + port + (runPage.startsWith("/") ? "" : "/") + runPage;
+
+    processHandler.addProcessListener(new ProcessAdapter() {
+      @Override
+      public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+        if (event.getText().contains("The code server is ready at")) {
+          ApplicationManager.getApplication().invokeLater(() -> myUiConnection.openBrowserOnce(url));
+        }
+      }
+    });
   }
 
   private boolean hasNoServerParameter() {
