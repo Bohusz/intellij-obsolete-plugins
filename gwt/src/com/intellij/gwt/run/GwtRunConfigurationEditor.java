@@ -24,6 +24,7 @@ import com.intellij.execution.ui.CommonJavaParametersPanel;
 import com.intellij.execution.ui.DefaultJreSelector;
 import com.intellij.execution.ui.JrePathEditor;
 import com.intellij.gwt.GwtBundle;
+import com.intellij.gwt.GwtDumbMode;
 import com.intellij.gwt.facet.GwtFacet;
 import com.intellij.gwt.module.GwtModulesManager;
 import com.intellij.gwt.module.model.GwtModule;
@@ -43,7 +44,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
-import com.intellij.openapi.project.DumbModeBlockedFunctionality;
 import com.intellij.openapi.project.DumbModeBlockedFunctionalityCollector;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -257,7 +257,7 @@ public final class GwtRunConfigurationEditor extends SettingsEditor<GwtRunConfig
       @Override
       public void actionPerformed(ActionEvent e) {
         if (DumbService.isDumb(project)) {
-          DumbModeBlockedFunctionalityCollector.INSTANCE.logFunctionalityBlocked(project, DumbModeBlockedFunctionality.Gwt);
+          DumbModeBlockedFunctionalityCollector.INSTANCE.logFunctionalityBlocked(project, GwtDumbMode.BLOCKED_FUNCTIONALITY);
           Messages.showErrorDialog(myMainPanel,
                                    GwtBundle.message("message.text.gwt.module.chooser.isn.t.available.while.updating.indices"));
           return;

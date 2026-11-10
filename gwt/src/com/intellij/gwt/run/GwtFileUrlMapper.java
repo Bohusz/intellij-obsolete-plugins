@@ -3,6 +3,7 @@ package com.intellij.gwt.run;
 import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.gwt.GwtBundle;
+import com.intellij.gwt.GwtDumbMode;
 import com.intellij.gwt.module.GwtModulesManager;
 import com.intellij.gwt.module.model.GwtModule;
 import com.intellij.ide.highlighter.JavaFileType;
@@ -10,7 +11,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.fileTypes.FileTypeRegistry;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.DumbModeBlockedFunctionality;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
@@ -186,7 +186,7 @@ final class GwtFileUrlMapper extends FileUrlMapper {
         return task.get();
       }
       catch (IndexNotReadyException e) {
-        DumbService.getInstance(project).showDumbModeNotificationForFunctionality(notification, DumbModeBlockedFunctionality.Gwt);
+        DumbService.getInstance(project).showDumbModeNotificationForFunctionality(notification, GwtDumbMode.BLOCKED_FUNCTIONALITY);
         return null;
       }
     }

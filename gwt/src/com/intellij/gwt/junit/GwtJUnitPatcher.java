@@ -21,6 +21,7 @@ import com.intellij.execution.configurations.JavaParameters;
 import com.intellij.execution.configurations.ParametersList;
 import com.intellij.facet.FacetManager;
 import com.intellij.gwt.GwtBundle;
+import com.intellij.gwt.GwtDumbMode;
 import com.intellij.gwt.facet.GwtFacet;
 import com.intellij.gwt.facet.GwtFacetType;
 import com.intellij.gwt.make.GwtCompilerPaths;
@@ -31,7 +32,6 @@ import com.intellij.gwt.sdk.GwtVersion;
 import com.intellij.javaee.web.facet.WebFacet;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.DumbModeBlockedFunctionality;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -87,7 +87,7 @@ public final class GwtJUnitPatcher extends JUnitPatcher {
       }
 
       return true;
-    }, GwtBundle.message("notification.content.unable.to.configure.gwt.unit.tests.during.index.update"), DumbModeBlockedFunctionality.Gwt);
+    }, GwtBundle.message("notification.content.unable.to.configure.gwt.unit.tests.during.index.update"), GwtDumbMode.BLOCKED_FUNCTIONALITY);
     if (!Boolean.TRUE.equals(success)) {
       return;
     }
