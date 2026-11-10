@@ -4,7 +4,6 @@
   <dependencies>
     <plugin id="com.intellij.spring.mvc"/>
     <module name="intellij.java.psi"/>
-    <module name="intellij.spring.mvc.core"/>
   </dependencies>
   <!-- endregion -->
 

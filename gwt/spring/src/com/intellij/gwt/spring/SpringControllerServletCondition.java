@@ -3,14 +3,15 @@ package com.intellij.gwt.spring;
 import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiModifierList;
-import com.intellij.spring.constants.SpringAnnotationsConstants;
 import org.jetbrains.annotations.NotNull;
 
 final class SpringControllerServletCondition implements Condition<PsiClass> {
+  // Not taken from SpringAnnotationsConstants: its module (intellij.spring.core.shared) has internal visibility since 263.
+  private static final String REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping";
 
   @Override
   public boolean value(@NotNull PsiClass psiClass) {
     final PsiModifierList modifierList = psiClass.getModifierList();
-    return modifierList != null && modifierList.hasAnnotation(SpringAnnotationsConstants.REQUEST_MAPPING);
+    return modifierList != null && modifierList.hasAnnotation(REQUEST_MAPPING);
   }
 }
