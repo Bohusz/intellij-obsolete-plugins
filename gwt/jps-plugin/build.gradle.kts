@@ -38,8 +38,7 @@ java.sourceSets["main"].resources {
 
 tasks {
     withType<JavaCompile> {
-        sourceCompatibility = "11"
-        targetCompatibility = "11"
+        options.release = 11
     }
 
     // The root plugin.xml registers <compileServer.plugin classpath="gwt-jps.jar"/>, but the default composed-jar
