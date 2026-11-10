@@ -5,6 +5,7 @@ import com.intellij.gwt.GwtTestCase;
 import com.intellij.gwt.inspections.eventListeners.GwtDeprecatedEventListenersInspection;
 import com.intellij.gwt.sdk.impl.GwtVersionImpl;
 import com.intellij.openapi.application.WriteAction;
+import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.testFramework.builders.JavaModuleFixtureBuilder;
 import com.intellij.testFramework.fixtures.JavaCodeInsightFixtureTestCase;
 import com.intellij.util.containers.ContainerUtil;
@@ -30,6 +31,12 @@ public class GwtDeprecatedListenersQuickFixTest extends JavaCodeInsightFixtureTe
   public void testNotReplacePassedToMethod() { doTest(); }
   public void testNotReplaceIfDoesntHaveMethods() { doTest(); }
   public void testNotReplaceIfTwoMethods() { doTest(); }
+
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+    VfsRootAccess.allowRootAccess(getTestRootDisposable(), GwtTestCase.getGwtTestDataPath());
+  }
 
   private void doTest() {
     WriteAction.runAndWait(() -> {
