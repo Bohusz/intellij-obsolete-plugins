@@ -103,7 +103,7 @@ intellijPlatform {
             sinceBuild = properties("pluginSinceBuild")
         }
 
-        changeNotes = ""
+        changeNotes = "Unofficial community build for IntelliJ IDEA 2026.3 (263). Not supported by JetBrains."
     }
 }
 

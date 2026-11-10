@@ -1,9 +1,12 @@
 <!-- Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.-->
 <idea-plugin>
-  <name>GWT</name>
+  <name>GWT (unofficial community build)</name>
   <id>com.intellij.gwt</id>
   <description>
     <![CDATA[
+      <p><b>Unofficial community build.</b> This is not an official JetBrains release and is not supported by JetBrains.
+      It is maintained by an author with limited experience with IntelliJ plugin development and with the GWT plugin,
+      so expect rough edges. Use at your own risk.</p>
       Simplifies development of web applications based on
       <a href="https://www.gwtproject.org/overview.html">Google Web Toolkit</a>.
         <ul>
@@ -68,7 +71,7 @@
   <depends optional="true" config-file="gwt-maven-support.xml">org.jetbrains.idea.maven</depends>
   <depends optional="true" config-file="gradle-support.xml">org.jetbrains.plugins.gradle</depends>
   <depends optional="true" config-file="gwt-web-support.xml">com.intellij.javaee.web</depends>
-  <vendor>JetBrains</vendor>
+  <vendor>xbr (Bohuslav Roztočil)</vendor>
   <category>JVM Frameworks</category>
 
   <extensionPoints>

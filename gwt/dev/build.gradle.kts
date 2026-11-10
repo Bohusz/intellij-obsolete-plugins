@@ -22,6 +22,8 @@ dependencies {
         intellijIdea(properties("platformVersion"))
         // com.intellij.dev.psiViewer.* (PSI Viewer extension API)
         bundledPlugin("com.intellij.dev")
+        // com.intellij.ide.highlighter.XmlFileType and other XML PSI classes
+        bundledPlugin("com.intellij.xml")
     }
 
     compileOnly(project(":"))
