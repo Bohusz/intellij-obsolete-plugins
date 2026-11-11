@@ -57,8 +57,10 @@ dependencies {
         testFramework(TestFrameworkType.JUnit5)
     }
 
-    // protobuf-lite runtime for the generated RemoteMessageProto sources
-    implementation("com.google.protobuf:protobuf-javalite:3.25.5")
+    // protobuf runtime for the generated RemoteMessageProto sources. Compile-only: the platform already
+    // provides protobuf 3.25.5 on the application classpath, and bundling a second copy in the plugin
+    // causes a LinkageError (loader constraint violation on GeneratedMessageLite).
+    compileOnly("com.google.protobuf:protobuf-javalite:3.25.5")
 
     // main sources reference org.jetbrains.jps.gwt.* classes at compile time;
     // runtimeOnly ships gwt-jps into the distribution for the external build process.
