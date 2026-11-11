@@ -56,6 +56,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.IdeActions;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationActivationListener;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -702,19 +703,7 @@ public final class GwtCommandLineState extends JavaCommandLineStateEx {
 
     @Override
     public @NotNull List<String> resolveDependencies(@NotNull String groupId, @NotNull String artifactId, @NotNull String version) {
-      try {
-        return myDependenciesStorage.getDependenciesPaths(groupId, artifactId, version);
-      }
-      catch (JpsGwtDependenciesStorage.GwtDependenciesNotFoundException e) {
-        new Notification(NotificationGroup.createIdWithTitle("GWT", GwtBundle.message("gwt.notification.display.id")), e.getMessage(),
-                         NotificationType.WARNING)
-          .setImportant(false)
-          .notify(myProject);
-
-        scheduleArtifactPathsResolve(List.of(new MavenCoordinates(groupId, artifactId, version)));
-
-        return emptyList();
-      }
+      return resolveAnyOf(List.of(new MavenCoordinates(groupId, artifactId, version)));
     }
 
     @Override
@@ -723,11 +712,25 @@ public final class GwtCommandLineState extends JavaCommandLineStateEx {
 
       for (MavenCoordinates alternative : alternatives) {
         try {
-          return myDependenciesStorage.getDependenciesPaths(alternative.groupId, alternative.artifactId, alternative.version);
+          List<String> paths =
+            myDependenciesStorage.getDependenciesPaths(alternative.groupId, alternative.artifactId, alternative.version);
+          // an empty list means a failed resolve; it must not hide the other alternatives or end up as an empty classpath
+          if (!paths.isEmpty()) {
+            return paths;
+          }
+          messages.add(new JpsGwtDependenciesStorage.GwtDependenciesNotFoundException(
+            alternative.groupId + ":" + alternative.artifactId + ":" + alternative.version).getMessage());
         }
         catch (JpsGwtDependenciesStorage.GwtDependenciesNotFoundException e) {
           messages.add(e.getMessage());
         }
+      }
+
+      // The stored dependencies are missing (for example after restarting the IDE). Starting DevMode with a classpath
+      // without gwt-dev/gwt-user dependencies fails with NoClassDefFoundError, so resolve them before the start if possible.
+      List<String> resolved = resolveNow(alternatives);
+      if (!resolved.isEmpty()) {
+        return resolved;
       }
 
       new Notification(NotificationGroup.createIdWithTitle("GWT", GwtBundle.message("gwt.notification.display.id")), StringUtil.join(messages, "\n"),
@@ -740,21 +743,55 @@ public final class GwtCommandLineState extends JavaCommandLineStateEx {
       return emptyList();
     }
 
+    /**
+     * Downloads and stores dependencies of the first alternative which can be resolved, showing a modal progress.
+     * Returns an empty list if this is not possible in the current thread state (for example under a read action
+     * on a background thread, where waiting for the EDT is not allowed) or nothing could be resolved.
+     */
+    private @NotNull List<String> resolveNow(Collection<MavenCoordinates> alternatives) {
+      Application application = ApplicationManager.getApplication();
+      if (!application.isDispatchThread() && application.isReadAccessAllowed()) {
+        return emptyList();
+      }
+
+      List<String> result = new ArrayList<>();
+      Runnable resolver = () -> {
+        for (MavenCoordinates coordinate : alternatives) {
+          List<String> paths = loadArtifactPaths(coordinate);
+          if (!paths.isEmpty()) {
+            myDependenciesStorage.storeDependenciesPaths(coordinate.groupId, coordinate.artifactId, coordinate.version, paths);
+            result.addAll(paths);
+            return;
+          }
+        }
+      };
+
+      if (application.isDispatchThread()) {
+        resolver.run();
+      }
+      else {
+        application.invokeAndWait(resolver, ModalityState.nonModal());
+      }
+      return result;
+    }
+
+    private @NotNull List<String> loadArtifactPaths(MavenCoordinates coordinate) {
+      JpsMavenRepositoryLibraryDescriptor descriptor =
+        new JpsMavenRepositoryLibraryDescriptor(coordinate.groupId, coordinate.artifactId, coordinate.version);
+      Collection<OrderRoot> roots = JarRepositoryManager.loadDependenciesModal(
+        myProject, descriptor, Collections.singleton(ArtifactKind.ARTIFACT), null, null);
+      return ContainerUtil.map(roots, root -> VfsUtilCore.virtualToIoFile(root.getFile()).getAbsolutePath());
+    }
+
     private void scheduleArtifactPathsResolve(Collection<MavenCoordinates> coordinates) {
       // invokeAndWait is not allowed under read action, so we can only refresh asynchronously
       ApplicationManager.getApplication().invokeLater(() -> {
         for (MavenCoordinates coordinate : coordinates) {
-          JpsMavenRepositoryLibraryDescriptor descriptor =
-            new JpsMavenRepositoryLibraryDescriptor(coordinate.groupId, coordinate.artifactId, coordinate.version);
-          Collection<OrderRoot> roots = JarRepositoryManager.loadDependenciesModal(
-            myProject,
-            descriptor,
-            Collections.singleton(ArtifactKind.ARTIFACT),
-            null,
-            null
-          );
-          List<String> resolvedPaths = ContainerUtil.map(roots, root -> VfsUtilCore.virtualToIoFile(root.getFile()).getAbsolutePath());
-          myDependenciesStorage.storeDependenciesPaths(coordinate.groupId, coordinate.artifactId, coordinate.version, resolvedPaths);
+          List<String> resolvedPaths = loadArtifactPaths(coordinate);
+          // do not store a failed (empty) result, it would hide the real problem on the next launch
+          if (!resolvedPaths.isEmpty()) {
+            myDependenciesStorage.storeDependenciesPaths(coordinate.groupId, coordinate.artifactId, coordinate.version, resolvedPaths);
+          }
         }
       }, ModalityState.nonModal(), myProject.getDisposed());
     }
